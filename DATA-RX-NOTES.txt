@@ -1,0 +1,72 @@
+-----------------------------------------------------------------------------
+Code Review
+
+1. It appears to determine the winner of a tick-tack-toe game
+
+2. The board is represented as a list of vectors. In function ttt, the 4 parts of 'check' look
+to see if any player has won a row, a column, or either diagonal.
+
+3. Feedback
+    Function 'check' should usually be defined in a (defn ...) form, not in a let form
+    It is usually not good to include a defn anywere but the top level
+    Formatting is too highly nested
+    Var names not descriptive enough
+      s -> curr-set
+      r -> ???
+      check -> sets -> ( (#{:o :x} #{:o :x} #{:o :x}) (#{:x} #{:o :x} #{:o :x}) (#{:o :x}) (#{:o :x}) )
+    No doc strings anywhere
+
+-----------------------------------------------------------------------------
+Code Writing
+
+Bonus #1:
+
+Since we cannot reuse any dots, the number of permutations for a max-length code with 9
+dots is 9! (9-factorial, or 362880). However, many of these patterns will contain illegal jumps, so
+the number of legal patterns is somewhat smaller.
+
+Since the code could be of any length (even a single digit), the total number of legal codes will be
+smaller than T = 9! + 9!/1! + 9!/2! + ...   An upper bound on this is (9 * 9!) ~ 3 billion, so it is
+not prohibitive to count them all with a computer. Using the following expression we get:
+
+(spyx (count
+        (filter truthy?
+          (map valid-path (tm/permute (range 1 10))))))
+  => 173280
+
+as the number of legal the 9-digit codes. Since each term is divided by an increasing factorial, we
+can estimate the total number of legal codes as ~500,000. For this estimate, we can solve
+9^N=500,000 to get N~=6 digits
+
+Bonus #2
+
+If the grid can be any size, then we can avoid discarding patterns by using diagonal lines and
+always be able to use all 8 digits. The alphnumeric password has base of (26+26+10)=62, so 8 chars
+gives us n0=62^8 possibilities.
+
+If we had no illegal patterns, an 8x8 grid would give us n1=64^8 possibilities. Since most
+disqualified codes use either the same col or row for 2 successive dots, going 1 row & col larger to
+9x9 would compensate for "most" of the lost codes (ignoring diagonals). I can imagine the outline of
+a proof that adding 1 more row & col would more than compensate for the diagonal restrictions, so
+I'm pretty sure that a 10x10 grid would have more than n0 legal codes.
+
+-----------------------------------------------------------------------------
+Our Code - ckent
+
+1. It provides a way to encode internal identifiers in the 4-byte range such that an attacker
+cannot easily guess which identifiers are valid or their encoding. This makes it difficult for a
+man-in-the-middle attacker or a malicious user to modify identifiers in transit to trick the system
+into revealing confidential data. Of course, careful authentication of users should always be
+done, and users should only be allowed access to authorizated data.
+
+2. This would be poor substitute for good A&A, SSL/TLS, etc.
+
+3. The code seems well-organized & has a number of unit tests, so that is a good start. I'm still
+not sure how it fits into an overall system design.
+
+4. More unit tests to demonstrate the intended use-case of other functions.
+
+-----------------------------------------------------------------------------
+Code Writing #2
+
+please see the src/clj/words.clj & test/tst/clj/words.clj files
